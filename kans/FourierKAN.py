@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+
 # https://github.com/syassami/FourierKAN-mnist
 class NaiveFourierKANLayer(nn.Module):
     def __init__(self, inputdim, outdim, initial_gridsize, addbias=True):
@@ -10,10 +11,14 @@ class NaiveFourierKANLayer(nn.Module):
         self.outdim = outdim
 
         # Learnable gridsize parameter
-        self.gridsize_param = nn.Parameter(torch.tensor(initial_gridsize, dtype=torch.float32))
+        self.gridsize_param = nn.Parameter(
+            torch.tensor(initial_gridsize, dtype=torch.float32)
+        )
 
         # Fourier coefficients as a learnable parameter with Xavier initialization
-        self.fouriercoeffs = nn.Parameter(torch.empty(2, outdim, inputdim, initial_gridsize))
+        self.fouriercoeffs = nn.Parameter(
+            torch.empty(2, outdim, inputdim, initial_gridsize)
+        )
         nn.init.xavier_uniform_(self.fouriercoeffs)
 
         if self.addbias:
@@ -24,7 +29,9 @@ class NaiveFourierKANLayer(nn.Module):
         xshp = x.shape
         outshape = xshp[:-1] + (self.outdim,)
         x = torch.reshape(x, (-1, self.inputdim))
-        k = torch.reshape(torch.arange(1, gridsize + 1, device=x.device), (1, 1, 1, gridsize))
+        k = torch.reshape(
+            torch.arange(1, gridsize + 1, device=x.device), (1, 1, 1, gridsize)
+        )
         xrshp = torch.reshape(x, (x.shape[0], 1, x.shape[1], 1))
         c = torch.cos(k * xrshp)
         s = torch.sin(k * xrshp)
@@ -35,11 +42,16 @@ class NaiveFourierKANLayer(nn.Module):
         y = torch.reshape(y, outshape)
         return y
 
+
 class MNISTFourierKAN(nn.Module):
     def __init__(self, params_list):
         super(MNISTFourierKAN, self).__init__()
-        self.fourierkan1 = NaiveFourierKANLayer(params_list[0], params_list[1], initial_gridsize=28)
-        self.fourierkan2 = NaiveFourierKANLayer(params_list[1], params_list[2], initial_gridsize=4)
+        self.fourierkan1 = NaiveFourierKANLayer(
+            params_list[0], params_list[1], initial_gridsize=28
+        )
+        self.fourierkan2 = NaiveFourierKANLayer(
+            params_list[1], params_list[2], initial_gridsize=4
+        )
 
     def forward(self, x):
         x = self.fourierkan1(x)
